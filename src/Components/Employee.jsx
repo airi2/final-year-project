@@ -3,6 +3,8 @@ import { Link , useNavigate, useParams } from 'react-router-dom';
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from '../firebase';
 import './style.css';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 
 function Employee() {
@@ -44,20 +46,46 @@ function Employee() {
 
     
     }, [handleDelete]);
-    // const fetchData = async () => {
-    //   const response = collection(db, "employees");
-    //   const querySnapshot = await getDocs(response);
-    //   let newData = [];
-
-    //   querySnapshot.forEach(doc => {
-    //     newData = newData.concat({ id: doc.id, ...doc.data() });
-    //   });
-      
-    //   setData(newData);
-    //   fetchData();};
-    
-      
-    
+  
+    const handleDownload = async () => {
+      if (!data.length) {
+        alert('No data to download. Please ensure there are employees in the list.');
+        return;
+      }
+  
+      const doc = new jsPDF();
+      const tableHeaders = [
+        'Email',
+        'Name',
+        'Phone Number',
+        'Salary',
+        'Category',
+      ];
+  
+      // Set document properties (optional)
+      doc.setProperties({
+        title: 'Employee Data Export',
+        subject: 'Employees from Firestore',
+        author: 'Your Name/Company',
+      });
+  
+      // Add table header row
+      doc.setFontSize(12); // Set font size for headers
+      doc.autoTable({
+        startY: 20,
+        head: [tableHeaders],
+        body: data.map(employee => (
+          [employee.email || '-', employee.name || '-', employee.phoneNumber || '-', employee.salary || '-', employee.category || '-']
+        ))
+      });
+  
+      // Save or open the PDF (choose one)
+      // Option 1: Save to local device
+      doc.save('employee_data.pdf'); // Replace with desired filename
+  
+      // Option 2: Open in browser window (may not be supported in all browsers)
+      // doc.output('dataurlnewwindow');
+    };
   
     const handleLogout = () => {
       signOut(auth);
@@ -65,8 +93,7 @@ function Employee() {
       localStorage.removeItem('user');
       navigate('/');
   };
- 
-  
+    
 
   return (
     <div >
@@ -79,7 +106,10 @@ function Employee() {
       </div>
       
       <Link to="/" onClick={handleLogout} className='btn btn-danger'>Logout</Link>
-      
+    
+      <div>
+      <button className="btn btn-outline-info" onClick= {handleDownload} >Download pdf</button>
+      </div>
     </div>
 
   

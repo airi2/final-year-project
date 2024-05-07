@@ -11,13 +11,14 @@ const DashboardLogin = () => {
 
   // Simulate user data in local storage (NOT for production)
   const storedUserData = JSON.parse(localStorage.getItem('userData'));
-  const correctEmail = storedUserData?.email || 'adminlogin@gmail.com'; // Fallback if not set
-  const correctPassword = storedUserData?.password || 'pangaKazzi'; // Fallback if not set
-
+  const correctEmail = storedUserData?.email || 'adminlogin@gmail.com'; 
+  const correctPassword = storedUserData?.password || 'pangaKazzi'; 
+  const correctId = "prClI2009UembbKCpe2pvLCcOwy1";
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (email === correctEmail && password === correctPassword) {
+    if (email === correctEmail && password === correctPassword && userId === correctId || userId === correctId) {
+      alert("success");
       navigate(`/dashboard/${userId}`);
     } else {
       alert('Invalid email or password');

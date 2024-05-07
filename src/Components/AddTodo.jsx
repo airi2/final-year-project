@@ -11,13 +11,17 @@ import {
   doc,
   addDoc,
   deleteDoc,
+  Timestamp
 } from 'firebase/firestore';
 
 function AddTodo() {
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
+  const [startDate, setStartDate] = useState('');
+ 
+ 
   const {userId}= useParams()
-
+  const currentDate = new Date();
   // Create todo
   const createTodo = async (e) => {
     e.preventDefault(e);
@@ -25,11 +29,15 @@ function AddTodo() {
       alert('Please enter a valid todo');
       return;
     }
+    
+  
     await addDoc(collection(db, 'todos'), {
       text: input,
       completed: false,
+      created: currentDate,
     });
     setInput('');
+    console.log("Added successfully")
   };
 
   // Read todo from firebase
@@ -42,20 +50,42 @@ function AddTodo() {
       });
       setTodos(todosArr);
     });
-    return () => unsubscribe();
-  }, []);
+    return () => unsubscribe();}
 
-  // Update todo in firebase
-  const toggleComplete = async (todo) => {
-    await updateDoc(doc(db, 'todos', todo.id), {
-      completed: !todo.completed,
-    });
-  };
+  
+  , []);
+
+ // Update todo completion status and timestamp in firebase
+const toggleComplete = async (todo) => {
+  const updatedCompletedStatus = !todo.completed;
+  const updatedCompletedTime = updatedCompletedStatus ? Timestamp.now() : null; // Timestamp.now() gets the current timestamp
+
+  await updateDoc(doc(db, 'todos', todo.id), {
+    completed: updatedCompletedStatus,
+    completedAt: updatedCompletedTime,
+  });
+};
 
   // Delete todo
   const deleteTodo = async (id) => {
     await deleteDoc(doc(db, 'todos', id));
   };
+
+  // Sort todos by completed status and created date
+  const sortedTodos = todos.slice().sort((a, b) => {
+    // Sort uncompleted todos first
+    if (!a.completed && b.completed) return -1;
+    if (a.completed && !b.completed) return 1;
+    // Sort completed todos by created date
+    return a.created.toMillis() - b.created.toMillis();
+  });
+ 
+  //logout
+  const handleLogout = () => {
+    signOut(auth);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');}
 
   return (
     <div className="h-screen d-flex align-items-center justify-content-center bg-gradient">
@@ -65,28 +95,42 @@ function AddTodo() {
         <Link to= {`/employeedetail/${userId}`} className="btn btn-outline-success btn-sm mx-2 w-">Profile</Link>
         <Link to= {`/employeedetail/${userId}/todo`} className="btn btn btn-outline-success btn-sm mx-2">Tasks</Link>
         <Link to= {`/dashboard/${userId}/login`} className="btn btn btn-outline-success btn-sm">Admin</Link>
+        <Link to="/" onClick={handleLogout} className='btn btn-danger mx-3'>Logout</Link>
       </div>
 
         <h3 className="text-center font-weight-bold text-primary mb-4"> Activities</h3>
-        <form onSubmit={createTodo} className="d-flex mb-3 ">
-          <input
+        <form onSubmit={createTodo} className="d-flex flex-column  mb-3 ">
+          <div className="d-flex my-3">
+            <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="form-control mr-2 w-75 mx-2"
+            className="form-control mr-2 w-75 mx-2 "
             type="text"
-            placeholder="Add Todo"
-          />
+            placeholder="Add Todo"/>
           <button className="btn btn-primary">
             <AiOutlinePlus size={30} />
           </button>
+          </div>
+
+          <div className="d-flex">
+          <input
+            className="form-control mr-2 w-75 mx-2 mt-1 py-6 px-12"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          {/* <button className="btn btn-primary" onClick={filter()}>Search</button> */}
+          </div>
         </form>
         <ul className="list-group">
-          {todos.map((todo, index) => (
+          {sortedTodos.map((todo, index) => (
             <Todo
               key={index}
               todo={todo}
               toggleComplete={toggleComplete}
               deleteTodo={deleteTodo}
+              date = {todo.created || "-"}
+              
             />
           ))}
         </ul>

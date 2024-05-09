@@ -11,8 +11,71 @@ function EditEmployee() {
         salary: '',
         category: ''
     });
+    const [phoneNumberValidationMessage, setPhoneNumberValidationMessage] = useState('');
+    const [emailValidationMessage, setEmailValidationMessage] = useState('');
+    const [salaryValidationMessage, setSalaryValidationMessage] = useState('');
     const navigate = useNavigate();
     const { userId } = useParams();
+
+    const handlePhoneNumberChange = (event) => {
+        const newPhoneNumber = event.target.value.replace(/\D/g, ''); // Remove non-digits
+        
+        // Validate phone number length
+        const isValidLength = newPhoneNumber.length === 10;
+        setPhoneNumberValidationMessage(isValidLength ? '' : 'Please enter a 10-digit phone number.');
+    
+        setData(prevData => ({
+            ...prevData,
+            phoneNumber: newPhoneNumber
+        }));
+    };
+    
+    const handleEmailChange = async (event) => {
+        const newEmail = event.target.value;
+    
+        // Basic email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValidFormat = emailRegex.test(newEmail);
+    
+        let validationMessage = '';
+        if (isValidFormat) {
+            // Extract domain from email address
+            const domain = newEmail.split('@')[1];
+    
+            // Validate domain using a regular expression
+            const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const isValidDomain = domainRegex.test(domain);
+    
+            if (!isValidDomain) {
+                validationMessage = 'Invalid domain.';
+            }
+        } else {
+            validationMessage = 'Please enter a valid email address.';
+        }
+    
+        setData(prevData => ({
+            ...prevData,
+            email: newEmail
+          }));
+    
+        setEmailValidationMessage(validationMessage);
+    };
+
+    const handleSalaryChange = (event) => {
+        const newSalary = event.target.value.replace(/\D/g, ''); // Remove non-digits
+    
+        // Validate salary format (only digits)
+        const isValidFormat = /^\d+$/.test(newSalary);
+        setSalaryValidationMessage(isValidFormat ? '' : 'Please enter digits only.');
+    
+        // Format the salary with currency formatting
+        const formattedSalary = newSalary.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        
+        setData(prevData => ({
+          ...prevData,
+          salary: formattedSalary
+        }));
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -56,7 +119,7 @@ function EditEmployee() {
             <h2>Update Employee</h2>
             <form className="row g-3 w-50" onSubmit={handleSubmit}>
                 <div className="col-12">
-                    <label htmlFor="inputName" className="form-label">Name</label>
+                    <label htmlFor="inputName" className="form-label"><strong>Name </strong></label>
                     <input type="text"
                         className="form-control"
                         id="inputName"
@@ -66,41 +129,47 @@ function EditEmployee() {
                         onChange={(e) => setData({ ...data, name: e.target.value })} />
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputEmail4"
-                        className="form-label">Email</label>
-                    <input type="email"
-                        className="form-control"
-                        id="inputEmail4"
+                    <label htmlFor="email"><strong>Email</strong></label>
+                    <input
+                        type="email"
                         placeholder='Enter Email'
+                        name='email'
+                        onChange={handleEmailChange}  // Use handleEmailChange function
+                        className='form-control rounded-0'
                         autoComplete='off'
                         value={data.email}
-                        onChange={(e) => setData({ ...data, email: e.target.value })}
                     />
+                    {emailValidationMessage && <p className="text-danger">{emailValidationMessage}</p>} {/* Display validation message conditionally */}
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputSalary" className="form-label">Salary</label>
-                    <input type="text"
+                    <label htmlFor="inputSalary" className="form-label"><strong>Salary (Ksh) </strong></label>
+                    <input
+                        type="text"
                         className="form-control"
                         id="inputSalary"
                         placeholder="Enter Salary"
                         autoComplete='off'
                         value={data.salary}
-                        onChange={(e) => setData({ ...data, salary: e.target.value })}
+                        onChange={handleSalaryChange} // Use handleSalaryChange function
                     />
+                    {salaryValidationMessage && <p className="text-danger">{salaryValidationMessage}</p>} {/* Display validation message conditionally */}
+                    
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputPhoneNumber" className="form-label">Phone Number</label>
-                    <input type="text"
-                        className="form-control"
-                        id="inputPhoneNumber"
-                        placeholder="0725667788"
+                    <label htmlFor="phoneNumber"><strong>Phone Number</strong></label>
+                    <input
+                        type="text"
+                        placeholder='Enter Phone Number'
+                        name='phoneNumber'
+                        onChange={handlePhoneNumberChange} // Use handlePhoneNumberChange function
+                        className='form-control rounded-0'
                         autoComplete='off'
                         value={data.phoneNumber}
-                        onChange={(e) => setData({ ...data, phoneNumber: e.target.value })}
                     />
+                    {phoneNumberValidationMessage && <p className="text-danger">{phoneNumberValidationMessage}</p>} {/* Display validation message conditionally */}
                 </div>
                 <div className="col-12">
-                    <label htmlFor="inputCategory" className="form-label">Category</label>
+                    <label htmlFor="inputCategory" className="form-label"><strong>Category </strong></label>
                     <input type="text"
                         className="form-control"
                         id="inputCategory"

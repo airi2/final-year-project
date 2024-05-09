@@ -16,28 +16,33 @@ const Login =() => {
     const [showPassword, setShowPassword] = useState(false);
     const passwordInputRef = useRef(null);
 
-    const handleEmailChange = (event) => {
-        const newEmail = event.target.value;
-        setEmail(newEmail);
-    
-        // Basic email format validation (already present)
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValidFormat = emailRegex.test(newEmail);
-    
-        // Conditional validation using validator.js (insecure)
-        let validationMessage = '';
-        if (isValidFormat) {
-          try {
-            validator.isEmail(newEmail, { domain_specific_validation: true }); // Can expose user input
-          } catch (error) {
-            validationMessage = 'This email address might not be from a valid domain.';
+    const handleEmailChange = async (event) => {
+      const newEmail = event.target.value;
+      setEmail(newEmail);
+  
+      // Basic email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValidFormat = emailRegex.test(newEmail);
+  
+      let validationMessage = '';
+      if (isValidFormat) {
+          // Extract domain from email address
+          const domain = newEmail.split('@')[1];
+  
+          // Validate domain using a regular expression
+          const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          const isValidDomain = domainRegex.test(domain);
+  
+          if (!isValidDomain) {
+              validationMessage = 'Invalid domain.';
           }
-        } else {
+      } else {
           validationMessage = 'Please enter a valid email address.';
-        }
-    
-        setEmailValidationMessage(validationMessage);
-    };
+      }
+  
+      setEmailValidationMessage(validationMessage);
+  };
+  
 
     const handlePasswordChange = (event) => {
         setPassword(event.target.value);

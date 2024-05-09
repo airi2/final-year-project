@@ -10,8 +10,50 @@ function EditProfile() {
         phoneNumber: '',
         
     });
+    const [phoneNumberValidationMessage, setPhoneNumberValidationMessage] = useState('');
+    const [emailValidationMessage, setEmailValidationMessage] = useState('');
     const navigate = useNavigate();
     const { userId } = useParams();
+
+    const handlePhoneNumberChange = (event) => {
+      const newPhoneNumber = event.target.value.replace(/\D/g, ''); // Remove non-digits
+      
+      // Validate phone number length
+      const isValidLength = newPhoneNumber.length === 10;
+      setPhoneNumberValidationMessage(isValidLength ? '' : 'Please enter a 10-digit phone number.');
+  
+      setData(prevData => ({
+          ...prevData,
+          phoneNumber: newPhoneNumber
+      }));
+  };
+  
+  const handleEmailChange = (event) => {
+      const newEmail = event.target.value;
+      
+      // Basic email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValidFormat = emailRegex.test(newEmail);
+  
+      // Conditional validation
+      let validationMessage = '';
+      if (isValidFormat) {
+          try {
+              validator.isEmail(newEmail, { domain_specific_validation: true });
+          } catch (error) {
+              validationMessage = 'This email address might not be from a valid domain.';
+          }
+      } else {
+          validationMessage = 'Please enter a valid email address.';
+      }
+  
+      setEmailValidationMessage(validationMessage);
+  
+      setData(prevData => ({
+          ...prevData,
+          email: newEmail
+      }));
+  };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -63,25 +105,28 @@ function EditProfile() {
 					value={data.name}/>
 				</div>
 				<div class="col-12">
-					<label htmlFor="inputEmail4" 
-                    className="form-label">Email</label>
-					<input type="email" 
-                    className="form-control" 
-                    id="inputEmail4" 
-                    placeholder='Enter Email'
-                    autoComplete='off'
-					onChange={e => setData({...data, email: e.target.value})} 
-                    value={data.email}/>
+        <label htmlFor="email"><strong>Email</strong></label>
+              <input
+                type="email"
+                placeholder='Enter Email'
+                name='email'
+                onChange={handleEmailChange}  // Use handleEmailChange function
+                className='form-control rounded-0'
+                autoComplete='off'
+              />
+              {emailValidationMessage && <p className="text-danger">{emailValidationMessage}</p>} {/* Display validation message conditionally */}
 				</div>
 				<div class="col-12">
-					<label htmlFor="phoneNumber" className="form-label">PhoneNumber</label>
-					<input type="text"
-                     className="form-control"
-                      id="inputAddress" 
-                      placeholder="0725667788" 
-                      autoComplete='off'
-					onChange={e => setData({...data, phoneNumber: e.target.value})} 
-                    value={data.phoneNumber}/>
+              <label htmlFor="phoneNumber"><strong>Phone Number</strong></label>
+              <input
+                type="text"
+                placeholder='Enter Phone Number'
+                name='phoneNumber'
+                onChange={handlePhoneNumberChange} // Use handlePhoneNumberChange function
+                className='form-control rounded-0'
+                autoComplete='off'
+              />
+              {phoneNumberValidationMessage && <p className="text-danger">{phoneNumberValidationMessage}</p>} {/* Display validation message conditionally */}
 				</div>
 				<div class="col-12">
 					<button type="submit" className="btn btn-primary">Update</button>

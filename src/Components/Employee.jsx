@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import './style.css';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import Swal from 'sweetalert2'
 
 
 function Employee() {
@@ -14,13 +15,32 @@ function Employee() {
   const {userId} = useParams();
 
   const handleDelete = async (id) => {
-    try {
-      await deleteDoc(doc(db, 'employees', id));
-      console.log("Deleted Successfully");
-     
-    } catch (error) {
-      console.error("Error deleting document: ", error);
-    }
+    Swal.fire({
+      title: 'Do you want to delete?',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      denyButtonText: 'No',
+      customClass: {
+        actions: 'my-actions',
+        cancelButton: 'order-1 right-gap',
+        confirmButton: 'order-2',
+        denyButton: 'order-3',
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          deleteDoc(doc(db, 'employees', id));
+          console.log("Deleted Successfully");
+         
+        } catch (error) {
+          console.error("Error deleting document: ", error);
+        }
+      } else if (result.isDenied) {
+        <Link to={`/dashboard/${userId}`} className="btn btn-danger btn-sm mx-3 me-2">Cancel</Link>
+      }
+    })
+   
   };
 
   useEffect(() => {
@@ -40,6 +60,7 @@ function Employee() {
       };
 
       fetchData();
+      
     } catch(error) {
       console.error("Error getting documents: ", error);
     }
@@ -86,7 +107,7 @@ function Employee() {
       // Option 2: Open in browser window (may not be supported in all browsers)
       // doc.output('dataurlnewwindow');
     };
-  
+
     const handleLogout = () => {
       signOut(auth);
       localStorage.removeItem('token');
@@ -108,7 +129,7 @@ function Employee() {
       <Link to="/" onClick={handleLogout} className='btn btn-danger'>Logout</Link>
     
       <div>
-      <button className="btn btn-outline-info" onClick= {handleDownload} >Download pdf</button>
+      <button className="btn btn-outline-info mx-2" onClick= {handleDownload} >Download pdf</button>
       </div>
     </div>
 

@@ -4,6 +4,7 @@ import Todo from './Todo';
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../firebase';
 import moment from 'moment';
+import './style.css';
 import {
   query,
   collection,
@@ -117,7 +118,8 @@ const toggleComplete = async (todo) => {
 
   }
 
-  const resetTodos = async () => {
+  const resetTodos = async (e) => {
+    e.preventDefault();
     try {
       const q = query(collection(db, 'todos'));
       const querySnapshot = await getDocs(q);
@@ -136,12 +138,23 @@ const toggleComplete = async (todo) => {
     }
   };
 
+  const dropDown = (e) => {
+    e.preventDefault();
+    const dropdownContent = document.getElementById("myDropdown");
+    if (dropdownContent.style.display === "none" || !dropdownContent.style.display) {
+      dropdownContent.style.display = "block";
+    } else {
+      dropdownContent.style.display = "none";
+    }
+
+  }
   //logout
   const handleLogout = () => {
     signOut(auth);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/');}
+    navigate('/');
+  }
 
   return (
     <div className="h-screen d-flex align-items-center justify-content-center bg-gradient">
@@ -157,8 +170,9 @@ const toggleComplete = async (todo) => {
         <h3 className="text-center font-weight-bold text-primary mb-4"> Activities</h3>
         <form onSubmit={createTodo} className="d-flex flex-column  mb-3 ">
           <div className="d-flex flex-column my-3">
-           <div className="d-flex my-2 "> 
-           <input
+           <div className="d-flex flex-column my-2 "> 
+           <div className="d-flex ">
+            <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="form-control mr-2 w-75 mx-2 "
@@ -167,26 +181,28 @@ const toggleComplete = async (todo) => {
 
           <button className="btn btn-primary">
             <AiOutlinePlus size={30} />
-          </button>
-          </div>
-          <div className="d-flex" >
-          <input
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="form-control mr-2 w-20 mx-2 "
-            type="date"
-            />
-
+          </button> </div>
+         
+          <div id="select d-flex ">
+            <p>Search by:</p>
+            <button onClick={dropDown} className="dropbtn"> Created Date</button><br/>
+            <div id="myDropdown" className="dropdown-content" style={{ display: "none" }}>
             <input
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="form-control mr-2 w-20 mx-2 "
-            type="date"
-            />
-            <button className="btn btn-primary" onClick={handleSearch}>Search</button>
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="options mr-2 w-20 mx-2 "
+              type="date"
+            /> 
+            <input
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="options mr-2 w-20 mx-2 "
+                type="date"
+            /> 
+            <button className="btn btn-primary" onClick={handleSearch}>Search</button> </div>
+          </div>      
+            
             </div>
-
-
           </div>
         </form>
 

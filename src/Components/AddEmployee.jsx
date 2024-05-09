@@ -79,6 +79,7 @@ const AddEmployee = () => {
 				</div>
 				<div className="col-12">
 					<button type="submit" className="btn btn-primary">Create</button>
+					<Link to={`/dashboard/${userId}`} className="btn btn-danger btn-sm mx-3 me-2">Cancel</Link>
 				</div>
 			</form>
 		</div>
